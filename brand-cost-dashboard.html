@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apparel Brand — Cost & Pricing Dashboard</title>
+<style>
+  :root{
+    --bg:#f4f2ec;
+    --surface:#ffffff;
+    --surface-2:#faf9f5;
+    --ink:#1b1b18;
+    --ink-2:#6c6a62;
+    --ink-3:#9b988d;
+    --line:#e7e4db;
+    --line-2:#d8d4c8;
+    --accent:#1c5f49;
+    --accent-soft:#e7f0ec;
+    --profit:#1d9e75;
+    --profit-soft:#e3f3ec;
+    --warn:#b5790f;
+    --warn-soft:#f8efda;
+    --danger:#bb3b2c;
+    --danger-soft:#f8e6e2;
+    --radius:14px;
+    --radius-sm:10px;
+    --shadow:0 1px 2px rgba(28,28,24,.04);
+    --c1:#1c5f49; --c2:#2f7d63; --c3:#5b9a7f; --c4:#86b09b;
+    --c5:#b7c9a0; --c6:#d9cf8e; --c7:#e0b572; --c8:#cf8f54; --c9:#b5790f;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#161613;
+      --surface:#21211d;
+      --surface-2:#1b1b18;
+      --ink:#ece9e0;
+      --ink-2:#a8a59a;
+      --ink-3:#76746a;
+      --line:#33322c;
+      --line-2:#403e36;
+      --accent:#4fae8f;
+      --accent-soft:#1d2a25;
+      --profit:#34b787;
+      --profit-soft:#16271f;
+      --warn:#d39a3a;
+      --warn-soft:#2a2113;
+      --danger:#d9685a;
+      --danger-soft:#2b1714;
+      --shadow:0 1px 2px rgba(0,0,0,.25);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--font);
+    background:var(--bg);
+    color:var(--ink);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:0 16px 64px;
+  }
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .wrap{max-width:1000px;margin:0 auto}
+
+  /* Header */
+  header{padding:28px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px}
+  .head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .brandline{display:flex;align-items:center;gap:11px}
+  .mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;flex-shrink:0}
+  h1{font-size:20px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .sub{font-size:13px;color:var(--ink-2);margin:2px 0 0}
+  .head-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .mini-field{display:flex;flex-direction:column;gap:3px}
+  .mini-field label{font-size:11px;color:var(--ink-3);font-weight:500;letter-spacing:.02em}
+  .mini-field input{width:150px}
+  .cur-field input{width:64px}
+  .ghost-btn{background:transparent;border:1px solid var(--line-2);color:var(--ink-2);padding:8px 13px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;transition:all .15s;height:38px;align-self:flex-end}
+  .ghost-btn:hover{background:var(--surface);color:var(--ink);border-color:var(--ink-3)}
+
+  /* Tabs */
+  .tabs{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+  .tab{background:transparent;border:1px solid var(--line);color:var(--ink-2);padding:9px 18px;border-radius:999px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:500;transition:all .15s}
+  .tab:hover{border-color:var(--ink-3)}
+  .tab.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .panel{display:none}
+  .panel.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* Layout */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media (max-width:780px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .card-title{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:0 0 16px}
+
+  /* Inputs / labels */
+  label.field-label{display:block;font-size:14px;color:var(--ink);margin-bottom:7px;font-weight:500}
+  input[type=text],input[type=number]{
+    font-family:inherit;font-size:14px;color:var(--ink);background:var(--surface-2);
+    border:1px solid var(--line-2);border-radius:9px;padding:9px 11px;width:100%;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type=text]:focus,input[type=number]:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line-2);outline:none;margin:0;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:17px;height:17px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--accent);cursor:pointer;transition:transform .1s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.12)}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--accent);cursor:pointer}
+
+  /* Cost rows */
+  .pieces-row{display:flex;align-items:center;gap:14px;padding:14px;background:var(--accent-soft);border-radius:var(--radius-sm);margin-bottom:18px}
+  .pieces-row .pl{flex:1}
+  .pieces-row .pl .field-label{margin-bottom:4px}
+  .pieces-row .pl .hint{font-size:12px;color:var(--ink-2)}
+  .pieces-row input[type=number]{width:96px;text-align:right;font-weight:600;font-size:16px}
+
+  .crow{padding:12px 0;border-bottom:1px solid var(--line)}
+  .crow:last-of-type{border-bottom:none}
+  .crow-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:9px}
+  .crow-label{font-size:14px;color:var(--ink);font-weight:500;display:flex;align-items:center;gap:7px}
+  .dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+  .crow-input{width:104px}
+  .crow-input input{text-align:right;font-weight:600}
+  .crow-slider-wrap{display:flex;align-items:center;gap:10px}
+  .crow-slider-wrap input[type=range]{flex:1}
+  .ad-note{font-size:11px;color:var(--ink-3);margin-top:2px}
+
+  .tag{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 7px;border-radius:5px;text-transform:uppercase;background:var(--warn-soft);color:var(--warn);margin-left:2px}
+
+  /* Margin block */
+  .margin-block{margin-top:20px;padding-top:18px;border-top:2px solid var(--line)}
+  .margin-inputs{display:flex;gap:12px;margin:12px 0 14px}
+  .margin-inputs .mi{flex:1}
+  .margin-inputs .mi label{font-size:12px;color:var(--ink-2);display:block;margin-bottom:5px;font-weight:500}
+  .margin-inputs .mi input{text-align:right;font-weight:600;font-size:15px}
+  .margin-inputs .sep{display:flex;align-items:flex-end;padding-bottom:10px;color:var(--ink-3);font-size:13px}
+
+  /* Outputs */
+  .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:8px}
+  .metric{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px 14px}
+  .metric .ml{font-size:11.5px;color:var(--ink-2);margin-bottom:5px;font-weight:500;letter-spacing:.01em}
+  .metric .mv{font-size:21px;font-weight:600;letter-spacing:-.01em;color:var(--ink)}
+  .metric .mv.small{font-size:17px}
+  .metric.hero{background:var(--accent-soft);border-color:transparent}
+  .metric.hero .mv{color:var(--accent)}
+  .metric.profit{background:var(--profit-soft);border-color:transparent}
+  .metric.profit .mv{color:var(--profit)}
+
+  .divider-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin:20px 0 11px}
+
+  /* Health pill */
+  .health{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:5px 12px;border-radius:999px;margin-top:2px}
+  .health .hd{width:8px;height:8px;border-radius:50%}
+  .health.good{background:var(--profit-soft);color:var(--profit)}
+  .health.good .hd{background:var(--profit)}
+  .health.ok{background:var(--warn-soft);color:var(--warn)}
+  .health.ok .hd{background:var(--warn)}
+  .health.bad{background:var(--danger-soft);color:var(--danger)}
+  .health.bad .hd{background:var(--danger)}
+
+  /* Composition bar */
+  .comp-wrap{margin-top:8px}
+  .comp-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+  .comp-seg{height:100%;transition:width .35s ease, flex-basis .35s ease;min-width:0}
+  .comp-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin-top:16px}
+  .leg{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);justify-content:space-between}
+  .leg .ll{display:flex;align-items:center;gap:7px;min-width:0}
+  .leg .ld{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+  .leg .lv{font-weight:600;color:var(--ink);white-space:nowrap}
+  .leg .lp{color:var(--ink-3);font-size:11px;margin-left:4px}
+
+  .note{font-size:12.5px;color:var(--ink-2);line-height:1.6;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 14px;margin-top:16px}
+  .note b{color:var(--ink);font-weight:600}
+
+  /* Investment planner specifics */
+  .big-input-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .big-input{flex:1;min-width:200px}
+  .big-input .field-label{margin-bottom:7px}
+  .big-input input{font-size:18px;font-weight:600;padding:12px 13px}
+
+  details{margin-top:18px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface-2)}
+  summary{cursor:pointer;padding:12px 14px;font-size:13px;font-weight:600;color:var(--ink);list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--ink-3);font-size:18px;font-weight:400}
+  details[open] summary::after{content:"−"}
+  .assump{padding:4px 14px 16px}
+  .assump .ar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .assump .ar:last-child{border-bottom:none}
+  .assump .ar label{font-size:13px;color:var(--ink-2)}
+  .assump .ar input{width:120px;text-align:right;font-weight:600}
+
+  .scenario{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:8px}
+  .scn{border:1px solid var(--line);border-radius:var(--radius-sm);padding:13px;text-align:center}
+  .scn .st{font-size:11px;color:var(--ink-2);font-weight:600;margin-bottom:8px;letter-spacing:.02em}
+  .scn .sv{font-size:18px;font-weight:600}
+  .scn .ss{font-size:11px;color:var(--ink-3);margin-top:3px}
+  .scn.pos .sv{color:var(--profit)}
+  .scn.neg .sv{color:var(--danger)}
+
+  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:13px 15px;margin-top:18px;font-size:13.5px;line-height:1.6}
+  .callout b{font-weight:600}
+  .warn-callout{border-left-color:var(--warn);background:var(--warn-soft)}
+
+  footer{max-width:1000px;margin:28px auto 0;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3);line-height:1.6}
+
+  @media print{
+    body{background:#fff;padding:0}
+    .tab,.ghost-btn,.head-controls{display:none}
+    .panel{display:block!important}
+    .card{break-inside:avoid;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="head-top">
+      <div class="brandline">
+        <div class="mark" id="markLetter">L</div>
+        <div>
+          <h1 id="headTitle">Linen Shirt — Unit Economics</h1>
+          <p class="sub">Cost, pricing & investment dashboard · edit any field, everything recalculates live</p>
+        </div>
+      </div>
+      <div class="head-controls">
+        <div class="mini-field">
+          <label for="productName">Product name</label>
+          <input type="text" id="productName" value="Linen Shirt">
+        </div>
+        <div class="mini-field cur-field">
+          <label for="currency">Currency</label>
+          <input type="text" id="currency" value="৳" maxlength="4">
+        </div>
+        <button class="ghost-btn" onclick="resetAll()">Reset</button>
+        <button class="ghost-btn" onclick="window.print()">Save PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="calc" onclick="switchTab('calc')">Cost &amp; pricing</button>
+    <button class="tab" data-tab="invest" onclick="switchTab('invest')">Investment planner</button>
+  </div>
+
+  <!-- ============ TAB 1: CALCULATOR ============ -->
+  <div class="panel on" id="panel-calc">
+    <div class="grid">
+
+      <!-- LEFT: inputs -->
+      <div class="card">
+        <p class="card-title">Inputs — cost per piece</p>
+
+        <div class="pieces-row">
+          <div class="pl">
+            <label class="field-label" for="pieces">Number of pieces ordered</label>
+            <div class="hint">Batch size for this production run</div>
+          </div>
+          <input type="number" id="pieces" value="50" min="1" max="2000">
+        </div>
+
+        <div id="costRows"></div>
+
+        <div class="margin-block">
+          <label class="field-label">Profit margin <span style="color:var(--ink-3);font-weight:400;font-size:12px">— set BDT or %, the other fills in</span></label>
+          <div class="margin-inputs">
+            <div class="mi">
+              <label>Profit per piece</label>
+              <input type="number" id="marginBDT" value="0">
+            </div>
+            <div class="sep">or</div>
+            <div class="mi">
+              <label>Markup over cost (%)</label>
+              <input type="number" id="marginPct" value="165" min="0" max="600">
+            </div>
+          </div>
+          <input type="range" id="marginSlider" min="0" max="500" value="165">
+        </div>
+      </div>
+
+      <!-- RIGHT: outputs -->
+      <div class="card">
+        <p class="card-title">Results</p>
+
+        <div class="metric-grid">
+          <div class="metric hero">
+            <div class="ml">Selling price / piece</div>
+            <div class="mv num" id="o_sell">৳0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Cost per piece (COGS)</div>
+            <div class="mv num" id="o_cogs">৳0</div>
+          </div>
+          <div class="metric profit">
+            <div class="ml">Gross profit / piece</div>
+            <div class="mv num" id="o_gp">৳0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Net profit / piece <span style="font-weight:400">(after ads)</span></div>
+            <div class="mv num small" id="o_np">৳0</div>
+          </div>
+        </div>
+
+        <div style="margin:14px 0 2px">
+          <span class="health good" id="healthPill"><span class="hd"></span><span id="healthTxt">Healthy margin</span></span>
+        </div>
+
+        <div class="divider-label">For the full batch (× pieces)</div>
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="ml">Revenue (SOGS)</div>
+            <div class="mv num small" id="o_rev">৳0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Total COGS</div>
+            <div class="mv num small" id="o_tcogs">৳0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Total gross profit</div>
+            <div class="mv num small" id="o_tgp">৳0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Total ad spend</div>
+            <div class="mv num small" id="o_tad">৳0</div>
+          </div>
+        </div>
+
+        <div class="divider-label">Key signals</div>
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="ml">Margin on sale price</div>
+            <div class="mv num small" id="o_gmpct">0%</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Break-even units</div>
+            <div class="mv num small" id="o_be">0</div>
+          </div>
+        </div>
+        <div class="note">
+          <b>Break-even</b> is how many pieces you must sell to recover this batch's full cost (production + ads). Everything sold beyond that is profit. <b>Ad cost sits outside COGS</b> — that's why gross profit and net profit differ.
+        </div>
+      </div>
+    </div>
+
+    <!-- Composition -->
+    <div class="card" style="margin-top:18px">
+      <p class="card-title">Where every ৳ of the sale price goes</p>
+      <div class="comp-wrap">
+        <div class="comp-bar" id="compBar"></div>
+        <div class="comp-legend" id="compLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 2: INVESTMENT PLANNER ============ -->
+  <div class="panel" id="panel-invest">
+    <div class="grid">
+
+      <!-- LEFT -->
+      <div class="card">
+        <p class="card-title">Start from your budget</p>
+        <div class="big-input-row">
+          <div class="big-input">
+            <label class="field-label" for="inv_total">Total investment</label>
+            <input type="number" id="inv_total" value="50000" min="0">
+          </div>
+          <div class="big-input">
+            <label class="field-label" for="inv_price">Target selling price / piece</label>
+            <input type="number" id="inv_price" value="3800" min="0">
+          </div>
+        </div>
+        <p style="font-size:13px;color:var(--ink-2);margin:10px 2px 0;line-height:1.6">
+          Enter what you can invest and what you'll charge. The planner estimates how many pieces you can make, then projects your return — using benchmark Bangladesh costs you can adjust below.
+        </p>
+
+        <details>
+          <summary>Adjust cost assumptions</summary>
+          <div class="assump">
+            <div class="ar">
+              <label>One-time setup (labels, cards, sample)</label>
+              <input type="number" id="inv_fixed" value="7500">
+            </div>
+            <div class="ar">
+              <label>Variable cost per piece (fabric, stitch, box…)</label>
+              <input type="number" id="inv_var" value="1335">
+            </div>
+            <div class="ar">
+              <label>Ad cost per piece</label>
+              <input type="number" id="inv_ad" value="200">
+            </div>
+            <div class="ar">
+              <label>Capital buffer to keep unspent (%)</label>
+              <input type="number" id="inv_buffer" value="10" min="0" max="50">
+            </div>
+          </div>
+        </details>
+
+        <div class="callout">
+          The <b>one-time setup</b> covers minimum-order items (woven labels, printed cards, the sample shirt) that you pay once and reuse across many batches. After your first run, these are already covered — later batches get cheaper per piece.
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <p class="card-title">Projected outcome</p>
+        <div class="metric-grid">
+          <div class="metric hero">
+            <div class="ml">Pieces you can make</div>
+            <div class="mv num" id="iv_pieces">0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Recommended to produce</div>
+            <div class="mv num" id="iv_rec">0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Revenue if fully sold</div>
+            <div class="mv num small" id="iv_rev">৳0</div>
+          </div>
+          <div class="metric profit">
+            <div class="ml">Net profit if fully sold</div>
+            <div class="mv num small" id="iv_profit">৳0</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Return on investment</div>
+            <div class="mv num small" id="iv_roi">0%</div>
+          </div>
+          <div class="metric">
+            <div class="ml">Break-even units</div>
+            <div class="mv num small" id="iv_be">0</div>
+          </div>
+        </div>
+
+        <div class="divider-label">Profit by how much you actually sell</div>
+        <div class="scenario" id="iv_scenario"></div>
+        <div class="note">
+          New brands rarely sell out instantly. These three columns show your real position if you sell <b>everything</b>, <b>most of it</b>, or <b>half</b>. If the 50% column still isn't a deep loss, your downside is well protected.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built as a planning tool — figures are estimates, not guarantees. Costs reflect typical small-batch Bangladesh sourcing and are fully editable. Currency and product name adjust everywhere, so anyone can use this for their own product.
+  </footer>
+</div>
+
+<script>
+/* ---------- Config ---------- */
+const COST_FIELDS = [
+  {key:'fabric',    label:'Fabric',                          def:720, max:2500, color:'var(--c1)'},
+  {key:'stitching', label:'Stitching / making charge',       def:240, max:1000, color:'var(--c2)'},
+  {key:'buttons',   label:'Buttons / thread / interlining',  def:70,  max:400,  color:'var(--c3)'},
+  {key:'label',     label:'Brand label (hang tag)',          def:70,  max:400,  color:'var(--c4)'},
+  {key:'card',      label:'Printed card',                    def:30,  max:300,  color:'var(--c5)'},
+  {key:'box',       label:'Branded box + tissue',            def:160, max:700,  color:'var(--c6)'},
+  {key:'delivery',  label:'Delivery / logistics',            def:75,  max:400,  color:'var(--c7)'},
+  {key:'defect',    label:'Defect / buffer / misc.',         def:70,  max:500,  color:'var(--c8)'},
+  {key:'ad',        label:'Ad run cost',                     def:200, max:2000, color:'var(--c9)', isAd:true},
+];
+
+const state = {
+  productName:'Linen Shirt',
+  currency:'৳',
+  pieces:50,
+  costs:{},
+  marginPct:165,
+};
+COST_FIELDS.forEach(f=>state.costs[f.key]=f.def);
+
+/* ---------- Helpers ---------- */
+const $ = id => document.getElementById(id);
+function money(n){
+  const v = Math.round(Number(n)||0);
+  return state.currency + v.toLocaleString('en-US');
+}
+function num(n){ return (Math.round(Number(n)||0)).toLocaleString('en-US'); }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+/* ---------- Build cost rows ---------- */
+function buildRows(){
+  const host = $('costRows');
+  host.innerHTML = '';
+  COST_FIELDS.forEach(f=>{
+    const row = document.createElement('div');
+    row.className = 'crow';
+    row.innerHTML = `
+      <div class="crow-top">
+        <div class="crow-label"><span class="dot" style="background:${f.color}"></span>${f.label}${f.isAd?'<span class="tag">outside COGS</span>':''}</div>
+        <div class="crow-input"><input type="number" id="in_${f.key}" value="${f.def}" min="0" max="${f.max}"></div>
+      </div>
+      <div class="crow-slider-wrap">
+        <input type="range" id="sl_${f.key}" min="0" max="${f.max}" value="${f.def}">
+      </div>
+      ${f.isAd?'<div class="ad-note">Ad spend to win one sale (cost per acquisition). Tracked separately from production cost.</div>':''}
+    `;
+    host.appendChild(row);
+  });
+  // attach listeners after insert
+  COST_FIELDS.forEach(f=>{
+    const inp = $('in_'+f.key), sl = $('sl_'+f.key);
+    inp.addEventListener('input', ()=>{
+      let v = clamp(Number(inp.value)||0, 0, f.max*4); // allow typing above slider max
+      state.costs[f.key] = v;
+      sl.value = clamp(v,0,f.max);
+      recalcKeepPct();
+    });
+    sl.addEventListener('input', ()=>{
+      let v = Number(sl.value)||0;
+      state.costs[f.key] = v;
+      inp.value = v;
+      recalcKeepPct();
+    });
+  });
+}
+
+/* ---------- Core calc ---------- */
+function cogs(){
+  return COST_FIELDS.filter(f=>!f.isAd).reduce((s,f)=>s+(state.costs[f.key]||0),0);
+}
+function recalc(){
+  const C = cogs();
+  const ad = state.costs.ad||0;
+  const profitBDT = C * state.marginPct/100;
+  const sell = C + profitBDT;
+  const grossMarginPct = sell>0 ? (profitBDT/sell*100) : 0;
+  const net = profitBDT - ad;
+  const p = state.pieces||0;
+
+  const totRev = sell*p, totCogs = C*p, totGP = profitBDT*p, totAd = ad*p;
+  const batchCost = totCogs + totAd;
+  const be = sell>0 ? Math.ceil(batchCost/sell) : 0;
+
+  // metrics
+  $('o_sell').textContent = money(sell);
+  $('o_cogs').textContent = money(C);
+  $('o_gp').textContent   = money(profitBDT);
+  $('o_np').textContent   = money(net);
+  $('o_rev').textContent  = money(totRev);
+  $('o_tcogs').textContent= money(totCogs);
+  $('o_tgp').textContent  = money(totGP);
+  $('o_tad').textContent  = money(totAd);
+  $('o_gmpct').textContent= grossMarginPct.toFixed(1)+'%';
+  $('o_be').textContent   = num(be) + (p? ' / '+num(p):'');
+
+  // health (based on margin on sale price)
+  const pill = $('healthPill'), txt = $('healthTxt');
+  pill.className = 'health ' + (grossMarginPct>=55?'good':grossMarginPct>=40?'ok':'bad');
+  txt.textContent = grossMarginPct>=55 ? 'Healthy margin' : grossMarginPct>=40 ? 'Workable, watch ad costs' : 'Margin too thin';
+
+  // sync margin BDT field display (don't fight focus)
+  if(document.activeElement !== $('marginBDT')){
+    $('marginBDT').value = Math.round(profitBDT);
+  }
+
+  buildComposition(sell, net);
+}
+
+function buildComposition(sell, net){
+  const bar = $('compBar'), leg = $('compLegend');
+  bar.innerHTML=''; leg.innerHTML='';
+  if(sell<=0) return;
+  const segs = COST_FIELDS.map(f=>({label:f.label, val:state.costs[f.key]||0, color:f.color}));
+  segs.push({label:'Net profit', val:Math.max(net,0), color:'var(--profit)'});
+  segs.forEach(s=>{
+    const pct = s.val/sell*100;
+    if(pct<=0) return;
+    const seg = document.createElement('div');
+    seg.className='comp-seg';
+    seg.style.flexBasis = pct+'%';
+    seg.style.background = s.color;
+    seg.title = s.label+' · '+money(s.val)+' ('+pct.toFixed(1)+'%)';
+    bar.appendChild(seg);
+
+    const l = document.createElement('div');
+    l.className='leg';
+    l.innerHTML = `<span class="ll"><span class="ld" style="background:${s.color}"></span>${s.label}</span>`+
+                  `<span><span class="lv">${money(s.val)}</span><span class="lp">${pct.toFixed(0)}%</span></span>`;
+    leg.appendChild(l);
+  });
+}
+
+/* recalc but recompute marginBDT from pct (used when costs change) */
+function recalcKeepPct(){ recalc(); }
+
+/* ---------- Margin two-way binding ---------- */
+function bindMargin(){
+  const bdt=$('marginBDT'), pct=$('marginPct'), sl=$('marginSlider');
+  pct.addEventListener('input', ()=>{
+    state.marginPct = clamp(Number(pct.value)||0, 0, 600);
+    sl.value = clamp(state.marginPct,0,500);
+    recalc();
+  });
+  sl.addEventListener('input', ()=>{
+    state.marginPct = Number(sl.value)||0;
+    pct.value = state.marginPct;
+    recalc();
+  });
+  bdt.addEventListener('input', ()=>{
+    const C = cogs();
+    const p = Number(bdt.value)||0;
+    state.marginPct = C>0 ? (p/C*100) : 0;
+    pct.value = Math.round(state.marginPct);
+    sl.value = clamp(state.marginPct,0,500);
+    recalc();
+  });
+}
+
+/* ---------- Pieces / header / currency ---------- */
+function bindGlobal(){
+  $('pieces').addEventListener('input', e=>{
+    state.pieces = clamp(Number(e.target.value)||0,0,100000);
+    recalc();
+  });
+  $('productName').addEventListener('input', e=>{
+    state.productName = e.target.value || 'Product';
+    $('headTitle').textContent = state.productName + ' — Unit Economics';
+    $('markLetter').textContent = (state.productName.trim()[0]||'L').toUpperCase();
+  });
+  $('currency').addEventListener('input', e=>{
+    state.currency = e.target.value || '';
+    recalc(); planner();
+  });
+}
+
+/* ---------- Investment planner ---------- */
+function planner(){
+  const total = Number($('inv_total').value)||0;
+  const price = Number($('inv_price').value)||0;
+  const fixed = Number($('inv_fixed').value)||0;
+  const varc  = Number($('inv_var').value)||0;
+  const adpp  = Number($('inv_ad').value)||0;
+  const buffer= clamp(Number($('inv_buffer').value)||0,0,50);
+
+  const perUnit = varc + adpp;
+  const usable = Math.max(total - fixed, 0);
+  const maxPieces = perUnit>0 ? Math.floor(usable/perUnit) : 0;
+  const recPieces = Math.floor(maxPieces * (1 - buffer/100));
+
+  // economics on maxPieces (capacity)
+  const pieces = maxPieces;
+  const sunkCost = fixed + pieces*varc + pieces*adpp; // total spent
+  const revFull = pieces*price;
+  const profitFull = revFull - sunkCost;
+  const roi = total>0 ? (profitFull/total*100) : 0;
+  const be = price>0 ? Math.ceil(sunkCost/price) : 0;
+
+  $('iv_pieces').textContent = num(maxPieces);
+  $('iv_rec').textContent    = num(recPieces);
+  $('iv_rev').textContent    = money(revFull);
+  $('iv_profit').textContent = money(profitFull);
+  $('iv_profit').parentElement.className = 'metric ' + (profitFull>=0?'profit':'');
+  $('iv_roi').textContent    = roi.toFixed(0)+'%';
+  $('iv_be').textContent     = num(be) + (maxPieces?' / '+num(maxPieces):'');
+
+  // sensitivity 100 / 75 / 50
+  const host = $('iv_scenario'); host.innerHTML='';
+  [[100,'Sells out'],[75,'Sells most'],[50,'Sells half']].forEach(([rate,lbl])=>{
+    const rev = pieces*price*rate/100;
+    const profit = rev - sunkCost;
+    const div = document.createElement('div');
+    div.className = 'scn ' + (profit>=0?'pos':'neg');
+    div.innerHTML = `<div class="st">${lbl} (${rate}%)</div>`+
+                    `<div class="sv num">${money(profit)}</div>`+
+                    `<div class="ss">${profit>=0?'profit':'loss'} · ${num(Math.round(pieces*rate/100))} sold</div>`;
+    host.appendChild(div);
+  });
+}
+function bindPlanner(){
+  ['inv_total','inv_price','inv_fixed','inv_var','inv_ad','inv_buffer'].forEach(id=>{
+    $(id).addEventListener('input', planner);
+  });
+}
+
+/* ---------- Tabs ---------- */
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on', b.dataset.tab===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  $('panel-'+t).classList.add('on');
+}
+
+/* ---------- Reset ---------- */
+function resetAll(){
+  COST_FIELDS.forEach(f=>{
+    state.costs[f.key]=f.def;
+    $('in_'+f.key).value=f.def;
+    $('sl_'+f.key).value=f.def;
+  });
+  state.pieces=50; $('pieces').value=50;
+  state.marginPct=165; $('marginPct').value=165; $('marginSlider').value=165;
+  state.currency='৳'; $('currency').value='৳';
+  state.productName='Linen Shirt'; $('productName').value='Linen Shirt';
+  $('headTitle').textContent='Linen Shirt — Unit Economics';
+  $('markLetter').textContent='L';
+  $('inv_total').value=50000; $('inv_price').value=3800;
+  $('inv_fixed').value=7500; $('inv_var').value=1335; $('inv_ad').value=200; $('inv_buffer').value=10;
+  recalc(); planner();
+}
+
+/* ---------- Init ---------- */
+buildRows();
+bindMargin();
+bindGlobal();
+bindPlanner();
+recalc();
+planner();
+</script>
+</body>
+</html>
